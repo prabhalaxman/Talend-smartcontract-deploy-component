@@ -1,0 +1,65 @@
+
+
+<%@ jet
+    imports="
+        org.talend.core.model.process.INode
+        org.talend.core.model.process.ElementParameterParser
+        org.talend.core.model.metadata.IMetadataTable
+        org.talend.core.model.metadata.IMetadataColumn
+        org.talend.core.model.process.IConnection
+        org.talend.core.model.process.IConnectionCategory
+        org.talend.designer.codegen.config.CodeGeneratorArgument
+        org.talend.core.model.metadata.types.JavaTypesManager
+        org.talend.core.model.metadata.types.JavaType
+        java.util.List
+        java.util.Map      
+    "
+%>
+<%
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName(); 
+
+    String pathToWallet1Key = ElementParameterParser.getValue(node, "__WALLET_LOCATION__");
+	String wallet1Password = ElementParameterParser.getValue(node, "__WALLET_PASSWORD__");	
+    String contractAddress = ElementParameterParser.getValue(node,"__CONTRACT_ADDRESS__");
+    String contractContent = ElementParameterParser.getValue(node, "__CONTRACT_CONTENT__");	
+    String contractContentToUpdate = ElementParameterParser.getValue(node,"__CONTRACT_CONTENT_TO_UPDATE__");
+
+
+%>
+
+System.out.println("MAIN JAVA CODE");
+// Load Wallet1 Credentials
+
+org.web3j.crypto.Credentials acc1Credentials_<%=cid%> = org.web3j.crypto.WalletUtils.loadCredentials(<%=wallet1Password%>, <%=pathToWallet1Key%>);
+System.out.println("Wallet1 Credentials output:" + acc1Credentials_<%=cid%>);
+
+
+        System.out.println("Credentials loaded");
+        System.out.println("Create simple contract");       
+
+       
+
+
+generated.com.test.Greeter contract = generated.com.test.Greeter.deploy(
+                web3j_<%=cid%>, acc1Credentials_<%=cid%>, org.web3j.tx.Contract.GAS_PRICE, org.web3j.tx.Contract.GAS_LIMIT,
+                new org.web3j.abi.datatypes.Utf8String(<%=contractContent%>)).send();
+
+         String contractAddress_<%=cid%> = contract.getContractAddress();
+        System.out.println("contract address is ：" + contractAddress_<%=cid%>);
+
+        System.out.println("Is deployed contract is valid  " + contract.isValid());
+
+        org.web3j.protocol.core.methods.response.TransactionReceipt transactionReceipt_<%=cid%> =
+                contract.newGreeting(new org.web3j.abi.datatypes.Utf8String("Guten Tag, und willkommen!")).send();
+        System.out.println(transactionReceipt_<%=cid%>.getTransactionHash());
+
+        org.web3j.abi.datatypes.Utf8String newGreeting_<%=cid%> = contract.greet().send();
+        System.out.println("new value " + newGreeting_<%=cid%>.getValue());
+
+
+
+
+
+   
